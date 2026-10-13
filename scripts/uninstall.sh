@@ -232,7 +232,10 @@ extract_json() { # file keypath
   "$PLUTIL" -extract "$2" json -o - "$1" 2>/dev/null
 }
 type_of() { # file keypath -> bool|integer|float|string|array|dictionary|(any); empty if absent
-  "$PLUTIL" -type "$2" -o - "$1" 2>/dev/null || true
+  local kind
+  # macOS 15 prints missing-key errors to stdout; they are not type names.
+  kind="$("$PLUTIL" -type "$2" -o - "$1" 2>/dev/null)" || return 0
+  printf '%s\n' "$kind"
 }
 
 # Prints one line per way the app's records about a kept display entry would

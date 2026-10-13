@@ -74,6 +74,26 @@ final class RecoveryScriptTests: XCTestCase {
         XCTAssertFalse(fx.exists(fx.state), "must not seed a journal")
     }
 
+    /// On macOS 15 plutil prints a missing-key diagnostic to stdout before
+    /// exiting 1. Treating that text as a type made array scans run forever.
+    func testTypeLookupDiscardsMissingKeyDiagnostics() throws {
+        try fx.writeSession(endsAt: Date(timeIntervalSinceNow: 3600))
+        for script in [fx.backstop, fx.uninstall] {
+            let text = try String(contentsOf: script, encoding: .utf8)
+            let start = try XCTUnwrap(text.range(of: "\ntype_of() {"))
+            let end = try XCTUnwrap(text.range(of: "\n}\n", range: start.upperBound..<text.endIndex))
+            let harness = fx.root.appendingPathComponent("type_of.\(script.lastPathComponent)")
+            try ("set -euo pipefail\nPLUTIL=/usr/bin/plutil" + text[start.lowerBound..<end.upperBound]
+                + #"type_of "$1" extensions; printf '[%s]\n' "$(type_of "$1" extensions.0)"; printf '[%s]\n' "$(type_of "$1" missing)""# + "\n")
+                .write(to: harness, atomically: true, encoding: .utf8)
+
+            let r = try fx.run(harness, [fx.session.path])
+
+            XCTAssertEqual(r.status, 0, r.stderr)
+            XCTAssertEqual(r.stdout, "array\n[]\n[]\n", script.lastPathComponent)
+        }
+    }
+
     func testValidFutureSessionIsNoOpWithoutForce() throws {
         try fx.writeSession(endsAt: Date(timeIntervalSinceNow: 3600))
         let dirty = #"{"sleepDisabledByUs":true,"lowPowerSetByUs":false,"frozenProcesses":[],"dockerFrozen":false}"#

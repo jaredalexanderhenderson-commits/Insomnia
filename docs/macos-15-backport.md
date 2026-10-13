@@ -21,6 +21,13 @@ input calculation is split into intermediate integer values because Swift
 6.1 could not type-check the original expression in reasonable time; its
 validation and results are unchanged.
 
+On macOS 15, `plutil -type` prints a missing-key diagnostic to stdout before
+exiting with status 1. The backstop and uninstaller's `type_of` helpers now
+emit output only after a successful lookup, preserving their contract of
+returning an empty string for missing keys. Without this change, the recovery
+script's array scans loop indefinitely while holding the recovery lock,
+blocking lid actions and timer cleanup. The lock implementation is unchanged.
+
 This does not establish that closed-lid sessions, recovery, keyboard brightness
 writes, battery thresholds, or thermal behavior have passed hardware testing
 on macOS 15. Test a short supervised session before leaving a closed Mac
@@ -84,9 +91,17 @@ Verified on the development Mac on October 12, 2026:
 - Shell scripts pass macOS Bash syntax checks. The packaged recovery CLI
   rejects malformed input, the backstop succeeds with a clean temporary
   home, and lid-simulation code is absent from the release binary.
+- Missing-key regression checks pass for both recovery scripts with the
+  actual macOS 15 `plutil`. A valid active-session backstop check completes
+  in under 0.1 seconds and releases its lock. Forced recovery clears the
+  session and journal using simulated power commands.
 
 The full `swift test` suite could not run: these Command Line Tools do not
-include XCTest, and full Xcode is not installed. Installation, privileged
-power changes and a physical lid-close session still require verification
-after the administrator completes the original installer. Automated and
-startup checks do not establish closed-lid wakefulness.
+include XCTest, and full Xcode is not installed. The original installer has
+completed, the app runs from `~/Applications`, and the loaded recovery agent
+matches the installed app's pinned signature and completes its scheduled
+runs successfully. A live two-minute session confirmed `SleepDisabled 1`.
+The first lid-close test exposed the `plutil` issue above; after releasing
+the stuck recovery process, the app retried its pending timer end and
+restored `SleepDisabled 0`. The corrected recovery script is installed and
+the repeated live lid/timer test is pending.

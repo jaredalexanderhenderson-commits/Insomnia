@@ -271,7 +271,10 @@ extract_json() { # file keypath
 # Type name of a keypath (bool, integer, float, string, array, dictionary,
 # "(any)" for null); empty if the key is absent.
 type_of() { # file keypath
-  "$PLUTIL" -type "$2" -o - "$1" 2>/dev/null || true
+  local kind
+  # macOS 15 prints missing-key errors to stdout; they are not type names.
+  kind="$("$PLUTIL" -type "$2" -o - "$1" 2>/dev/null)" || return 0
+  printf '%s\n' "$kind"
 }
 is_true() { # file key
   [[ "$(extract "$1" "$2" || true)" == "true" ]]
