@@ -89,9 +89,10 @@ final class PrivateDisplayGuardTests: XCTestCase {
     // MARK: DisplayServices: measured macOS majors only
 
     func testDisplayServicesIsAllowedOnMeasuredMajorsOnly() throws {
+        XCTAssertNil(DisplayPower.displayServicesRefusal(osMajorVersion: 15))
         XCTAssertNil(DisplayPower.displayServicesRefusal(osMajorVersion: 26))
         XCTAssertNil(DisplayPower.displayServicesRefusal(osMajorVersion: 27))
-        for major in [15, 25, unmeasuredMajor, unmeasuredMajor + 3] {
+        for major in [14, 25, unmeasuredMajor, unmeasuredMajor + 3] {
             let why = try XCTUnwrap(DisplayPower.displayServicesRefusal(osMajorVersion: major))
             XCTAssertTrue(why.contains("this is macOS \(major)"), why)
             XCTAssertTrue(why.contains(measuredMajorsText), why)
