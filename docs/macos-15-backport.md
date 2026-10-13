@@ -104,4 +104,21 @@ runs successfully. A live two-minute session confirmed `SleepDisabled 1`.
 The first lid-close test exposed the `plutil` issue above; after releasing
 the stuck recovery process, the app retried its pending timer end and
 restored `SleepDisabled 0`. The corrected recovery script is installed and
-the repeated live lid/timer test is pending.
+the repeated two-minute live test passed on battery power:
+
+- Sleep was disabled for the active session. The power log records no
+  sleep/wake transition during the test.
+- The lid was closed for 21 seconds. Display and keyboard light were turned
+  off, speakers muted, six Slack processes paused, and Low Power Mode
+  enabled. Codex and Claude were not frozen.
+- Reopening the lid resumed all six processes, restored audio and both
+  brightness levels, and switched Low Power Mode off. No recovery-lock
+  refusal occurred during the patched test.
+- The timer ended at the saved deadline, restored `SleepDisabled 0`,
+  removed the session file and left a clean recovery journal. The recovery
+  agent continues to complete its scheduled checks with exit status 0.
+
+macOS denied notification authorization during these sessions. Session
+status and warnings remain available in the menu and log; native notification
+banners were not validated. Battery-floor, critical thermal and extended
+unattended sessions were not hardware-tested.
