@@ -45,27 +45,17 @@
 
 This fork requires macOS 15 or later on an Apple Silicon Mac.
 
-Paste this into your coding agent:
-
-```text
-Install the latest stable Insomnia release by following https://github.com/krishhgg/Insomnia/blob/main/skills/install-insomnia/SKILL.md. If a step needs my password, give me the command to run in Terminal.
-```
-
-For the newest nightly, write "the newest Insomnia nightly prerelease" in
-place of "the latest stable Insomnia release". Nightlies are built from `main`
-on each day it has new commits. They have the newest code and may be broken.
-
-To install a release yourself, follow [docs/install.md](docs/install.md). It
-covers both channels, how to check the download, and `v0.1.0`, which installs
-differently.
+Build from the `macos-15-compat` branch below. Upstream stable and nightly
+downloads require macOS 26 and cannot be used for this backport.
 
 ### Build from source
 
-Needs Xcode with Swift 6.2 or later. Replace `v<version>` with the latest
-stable tag, or a nightly tag for the newest code:
+Needs Swift 6.1 or later. Xcode is required to run the XCTest suite; the app
+can be built with compatible Command Line Tools. See the
+[backport notes](docs/macos-15-backport.md) for the local toolchain workaround.
 
 ```bash
-git clone --branch v<version> --depth 1 https://github.com/krishhgg/Insomnia.git
+git clone --branch macos-15-compat --depth 1 https://github.com/jaredalexanderhenderson-commits/Insomnia.git
 cd Insomnia
 ./scripts/install.sh
 open "$HOME/Applications/Insomnia.app"

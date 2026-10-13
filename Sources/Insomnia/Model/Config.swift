@@ -130,7 +130,6 @@ struct Config: Codable, Equatable, Sendable {
         "dev.zed.Zed",                    // Zed
         "com.google.antigravity",         // Antigravity
         "com.anthropic.claudefordesktop", // Claude
-        "com.jaredhenderson.codexpulse",   // Codex Pulse
         "com.openai.codex",               // ChatGPT (hosts Codex and computer use)
         "io.tailscale.ipn.macsys",        // Tailscale
         "ai.elementlabs.lmstudio",        // LM Studio
